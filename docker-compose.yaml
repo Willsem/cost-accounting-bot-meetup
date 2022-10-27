@@ -1,0 +1,70 @@
+version: '3.9'
+
+services:
+  postgres:
+    container_name: postgres
+    restart: unless-stopped
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/db-init.sql:/docker-entrypoint-initdb.d/db.sql
+    ports:
+      - '5432:5432'
+    networks:
+      - telegram-bot-net
+    healthcheck:
+      test: pg_isready -U postgres
+      start_period: 30s
+      interval: 10s
+      timeout: 10s
+      retries: 30
+
+  redis:
+    container_name: redis
+    restart: unless-stopped
+    image: redis:7
+    volumes:
+      - redis-data:/data
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass redis
+    networks:
+      - telegram-bot-net
+    healthcheck:
+      test: redis-cli --raw incr ping
+      start_period: 30s
+      interval: 10s
+      timeout: 10s
+      retries: 30
+
+  bot:
+    container_name: telegram-bot
+    restart: unless-stopped
+    build: .
+    environment:
+      - TELEGRAM_BOT_WASTES_TELEGRAM_TOKEN=850682440:AAG8vjEn-wticG_uwieBzkDofS-0e2xBjmg
+      - TELEGRAM_BOT_WASTES_DB_NAME=telegram_bot_wastes
+      - TELEGRAM_BOT_WASTES_DB_HOST=postgres
+      - TELEGRAM_BOT_WASTES_DB_PORT=5432
+      - TELEGRAM_BOT_WASTES_DB_USER=postgres
+      - TELEGRAM_BOT_WASTES_DB_PASSWORD=postgres
+      - TELEGRAM_BOT_WASTES_REDIS_HOST=redis
+      - TELEGRAM_BOT_WASTES_REDIS_PORT=6379
+      - TELEGRAM_BOT_WASTES_REDIS_PASSWORD=redis
+    networks:
+      - telegram-bot-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  telegram-bot-net:

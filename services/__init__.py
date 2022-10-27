@@ -1,0 +1,1 @@
+from .wastes import WasteService
