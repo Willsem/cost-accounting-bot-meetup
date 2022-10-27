@@ -1,16 +1,20 @@
-FROM python:3.10-slim-buster AS env
+FROM python:3.11.0-slim-bullseye AS env
+
+RUN python3 -m venv /opt/env
+RUN . /opt/env/bin/activate
+
+COPY requirements.txt requirements.txt
+RUN /opt/env/bin/pip install -r requirements.txt
+
+
+FROM python:3.11.0-slim-bullseye AS prod
+
+RUN adduser --home /app --shell /bin/sh --uid 1000 --disabled-password appuser
+USER appuser
 
 WORKDIR /app
 
-RUN apt update -y
-RUN apt install postgresql-server-dev-all -y
-
-COPY requirements.txt requirements.txt
-
-RUN pip3 install --upgrade pip
-RUN pip3 install libpq5
-RUN pip3 install -r requirements.txt
-
+COPY --from=env /opt/env /app/env
 COPY . .
 
-CMD ["python3", "/app/main.py"]
+CMD ["/app/env/bin/python", "main.py"]

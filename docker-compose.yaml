@@ -43,6 +43,7 @@ services:
   bot:
     container_name: telegram-bot
     restart: unless-stopped
+    platform: linux/amd64
     build: .
     environment:
       - TELEGRAM_BOT_WASTES_TELEGRAM_TOKEN=850682440:AAG8vjEn-wticG_uwieBzkDofS-0e2xBjmg
