@@ -63,3 +63,13 @@ dotenv -e ./.env -- ./venv/bin/python3.11 main.py
 ```sh
 docker-compose down
 ```
+
+## Просмотр логов и метрик
+
+Графана запуcкается на [localhost:3000](localhost:3000). Для отображения логов и метрик необходимо добавить Data Source.
+
+1. Заходим в настройки, выбираем Data Sources
+2. Добавляем два новых Data Source
+  1. Loki, в настройках указываем url `http://loki:3100`
+  2. Prometheus, в настройках указываем url `http://prometheus:9090`
+3. Теперь все данные можно смотреть во вкладке Explore
